@@ -13,17 +13,16 @@ const cors = Cors({
 
 
 // Helper function to run middleware
-function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
+function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: (req: NextApiRequest, res: NextApiResponse, next: (err?: any) => void) => void): Promise<void> {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result);
+    fn(req, res, (err: any) => {
+      if (err) {
+        return reject(err);
       }
-      return resolve(result);
+      return resolve();
     });
   });
 }
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
