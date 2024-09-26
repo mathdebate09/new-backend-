@@ -9,13 +9,14 @@ const cors = Cors({
   origin: ['http://localhost:5173', 'https://sickfreak.club'],
 });
 
-function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
+// Helper function to run middleware
+function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: (req: NextApiRequest, res: NextApiResponse, next: (err: unknown) => void) => void): Promise<void> {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result);
+    fn(req, res, (err: unknown) => {
+      if (err) {
+        return reject(err);
       }
-      return resolve(result);
+      return resolve();
     });
   });
 }
