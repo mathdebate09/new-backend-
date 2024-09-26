@@ -1,12 +1,35 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
+import Cors from "cors";
+
 
 const prisma = new PrismaClient();
+
+// Initialize the cors middleware
+const cors = Cors({
+  methods: ['POST', 'GET', 'HEAD'],
+  origin: 'http://localhost:5173', 
+});
+
+
+// Helper function to run middleware
+function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+}
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+   // Run CORS middleware
+   await runMiddleware(req, res, cors);
   if (req.method === "GET") {
     // Fetch all users
     try {
