@@ -36,7 +36,8 @@ export default async function handler(
       });
 
       if (user) {
-        res.status(200).json({ success: true, creatorId: user.id });
+        // Return all user details
+        res.status(200).json({ success: true, user });
       } else {
         res.status(404).json({ success: false, message: "User not found" });
       }
