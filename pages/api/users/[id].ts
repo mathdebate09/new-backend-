@@ -7,12 +7,20 @@ const prisma = new PrismaClient();
 
 // Initialize the cors middleware
 const cors = Cors({
-  methods: ['POST', 'GET', 'OPTIONS', 'HEAD'],
-  origin: ['http://localhost:5173', 'https://sickfreak.club'],
+  methods: ["POST", "GET", "OPTIONS", "HEAD"],
+  origin: ["http://localhost:5173", "https://sickfreak.club"],
 });
 
 // Helper function to run middleware
-function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: (req: NextApiRequest, res: NextApiResponse, next: (err: unknown) => void) => void): Promise<void> {
+function runMiddleware(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  fn: (
+    req: NextApiRequest,
+    res: NextApiResponse,
+    next: (err: unknown) => void
+  ) => void
+): Promise<void> {
   return new Promise((resolve, reject) => {
     fn(req, res, (err: unknown) => {
       if (err) {
@@ -27,14 +35,23 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-    // Run CORS middleware
-    await runMiddleware(req, res, cors);
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
 
-  const { id } = req.query; 
+  const { id } = req.query;
 
   if (req.method === "GET") {
     try {
-      const user = await prisma.user.findUnique({ where: { id: String(id) } });
+      const user = await prisma.user.findUnique({
+        where: { id: String(id) },
+        include: {
+          crates: true, 
+          bookmarkedCrates: true, 
+          reels: true,
+          votes: true,
+          logs: true,
+        },
+      });
       if (!user) return res.status(404).json({ error: "User not found" });
       res.status(200).json(user);
     } catch (error) {
