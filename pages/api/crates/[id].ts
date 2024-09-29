@@ -11,12 +11,20 @@ const HTTP_SERVER_ERROR = 500;
 const HTTP_METHOD_NOT_ALLOWED = 405;
 // Initialize the cors middleware
 const cors = Cors({
-  methods: ['POST', 'GET', 'OPTIONS', 'HEAD'],
-  origin: ['http://localhost:5173', 'https://sickfreak.club'],
+  methods: ["POST", "GET", "OPTIONS", "HEAD"],
+  origin: ["http://localhost:5173", "https://sickfreak.club"],
 });
 
 // Helper function to run middleware
-function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: (req: NextApiRequest, res: NextApiResponse, next: (err: unknown) => void) => void): Promise<void> {
+function runMiddleware(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  fn: (
+    req: NextApiRequest,
+    res: NextApiResponse,
+    next: (err: unknown) => void
+  ) => void
+): Promise<void> {
   return new Promise((resolve, reject) => {
     fn(req, res, (err: unknown) => {
       if (err) {
@@ -31,8 +39,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-      // Run CORS middleware
-      await runMiddleware(req, res, cors);
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
 
   const { id } = req.query;
 
@@ -40,6 +48,7 @@ export default async function handler(
     try {
       const crate = await prisma.crate.findUnique({
         where: { id: String(id) },
+        include: { creator: true },
       });
       if (!crate)
         return res.status(HTTP_NOT_FOUND).json({ error: "Crate not found" });
@@ -89,8 +98,8 @@ export default async function handler(
       const Crate = await prisma.crate.delete({
         where: { id: String(id) },
       });
-      console.log(Crate)
-      res.status(HTTP_NO_CONTENT).end(); 
+      console.log(Crate);
+      res.status(HTTP_NO_CONTENT).end();
     } catch (error) {
       res
         .status(HTTP_SERVER_ERROR)
