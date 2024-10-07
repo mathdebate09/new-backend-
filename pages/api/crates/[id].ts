@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 const HTTP_OK = 200;
 const HTTP_NO_CONTENT = 204;
-// const HTTP_NOT_FOUND = 404;
+const HTTP_NOT_FOUND = 404;
 const HTTP_SERVER_ERROR = 500;
 const HTTP_METHOD_NOT_ALLOWED = 405;
 // Initialize the cors middleware
@@ -46,17 +46,18 @@ export default async function handler(
 
   if (req.method === "GET") {
     try {
-      const userWithBookmarks = await prisma.user.findUnique({
+      const crate = await prisma.crate.findUnique({
         where: { id: String(id) },
-        include: {
-          bookmarkedCrates: {
-            include: {
-              tokens: true,
-            },
-          },
-        },
+        include: { creator: true },
       });
-      res.status(HTTP_OK).json(userWithBookmarks);
+      if (!crate)
+        return res.status(HTTP_NOT_FOUND).json({ error: "Crate not found" });
+      const tokens = await prisma.token.findMany({
+        where: { crateId: crate.id },
+      });
+      if (!tokens)
+        return res.status(HTTP_NOT_FOUND).json({ error: "Tokens not found" });
+      res.status(HTTP_OK).json({ ...crate, tokens });
     } catch (error) {
       res
         .status(HTTP_SERVER_ERROR)
