@@ -9,12 +9,20 @@ const HTTP_SERVER_ERROR = 500;
 
 // Initialize the cors middleware
 const cors = Cors({
-  methods: ['POST', 'GET', 'OPTIONS', 'HEAD'],
-  origin: ['http://localhost:5173', 'https://sickfreak.club'],
+  methods: ["POST", "GET", "OPTIONS", "HEAD"],
+  origin: ["http://localhost:5173", "https://sickfreak.club"],
 });
 
 // Helper function to run middleware
-function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: (req: NextApiRequest, res: NextApiResponse, next: (err: unknown) => void) => void): Promise<void> {
+function runMiddleware(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  fn: (
+    req: NextApiRequest,
+    res: NextApiResponse,
+    next: (err: unknown) => void
+  ) => void
+): Promise<void> {
   return new Promise((resolve, reject) => {
     fn(req, res, (err: unknown) => {
       if (err) {
@@ -28,10 +36,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
 
-    // Run CORS middleware
-    await runMiddleware(req, res, cors);
-    
   const { id } = req.query;
   const { user } = req.body;
 
@@ -46,6 +53,32 @@ export default async function handler(
         },
       });
       res.status(HTTP_OK).json(updatedUser);
+    } catch (error) {
+      res
+        .status(HTTP_SERVER_ERROR)
+        .json({ message: "Error bookmarking crate", error });
+    }
+  } else if (req.method === "GET") {
+    try {
+      const fetchedUser = await prisma.user.findFirst({
+        where: { id: user },
+        include: {
+          bookmarkedCrates: true,
+        }
+      });
+      const bookMarkedCrates = fetchedUser?.bookmarkedCrates;
+
+      if(!bookMarkedCrates) return res.status(404).json({ error: "Bookmarks not found" });
+
+      for (const crate of bookMarkedCrates) {
+        const bookmarkedTokens = await prisma.token.findMany({
+          where: { crateId: crate.id },
+        });
+        //@ts-expect-error basically because I can lol
+        crate.tokens = bookmarkedTokens;
+      }
+
+      res.status(HTTP_OK).json(bookMarkedCrates);
     } catch (error) {
       res
         .status(HTTP_SERVER_ERROR)
