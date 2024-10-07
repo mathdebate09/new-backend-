@@ -33,9 +33,15 @@ export default async function handler(
 ) {
   // Run CORS middleware
   await runMiddleware(req, res, cors);
+
   if (req.method === "GET") {
     try {
-      const crates = await prisma.crate.findMany();
+      const crates = await prisma.crate.findMany({
+        include: {
+          tokens: true,
+          creator: true,
+        },
+      });
       res.status(HTTP_OK).json(crates);
     } catch (error) {
       res
@@ -57,12 +63,13 @@ export default async function handler(
 
       const createdTokens = await Promise.all(
         tokens.map(
-          (token: { symbol: string; name: string; quantity: number }) =>
+          (token: { symbol: string; name: string; quantity: number; coingeckoId: string }) =>
             prisma.token.create({
               data: {
                 symbol: token.symbol,
                 name: token.name,
                 quantity: token.quantity,
+                coingeckoId: token.coingeckoId,
                 crateId: newCrate.id,
               },
             })

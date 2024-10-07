@@ -56,6 +56,7 @@ model Token {
   symbol    String
   name      String
   quantity  Int
+  coingeckoId String?  
   createdAt DateTime @default(now())
   crateId   String
   crate     Crate    @relation(fields: [crateId], references: [id], onDelete: Cascade)
