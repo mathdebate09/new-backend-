@@ -20,3 +20,5 @@ The base URL for the API is: ```https://sickb.vercel.app```
 ```bash
 curl -X GET "https://sickb.vercel.app/api/users"
 
+
+trigger deployment
