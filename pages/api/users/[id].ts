@@ -45,14 +45,28 @@ export default async function handler(
       const user = await prisma.user.findUnique({
         where: { id: String(id) },
         include: {
-          crates: true, 
-          bookmarkedCrates: true, 
+          crates: true,
+          bookmarkedCrates: true,
           reels: true,
           votes: true,
           logs: true,
         },
       });
       if (!user) return res.status(404).json({ error: "User not found" });
+      for (const crate of user.bookmarkedCrates) {
+        const bookmarkedTokens = await prisma.token.findMany({
+          where: { crateId: crate.id },
+        });
+        //@ts-expect-error basically because I can lol
+        crate.tokens = bookmarkedTokens;
+      }
+      for (const crate of user.crates) {
+        const bookmarkedTokens = await prisma.token.findMany({
+          where: { crateId: crate.id },
+        });
+        //@ts-expect-error basically because I can lol
+        crate.tokens = bookmarkedTokens;
+      }
       res.status(200).json(user);
     } catch (error) {
       res.status(500).json({ message: "Error fetching user", error });
