@@ -46,18 +46,17 @@ export default async function handler(
 
   if (req.method === "GET") {
     try {
-      const crate = await prisma.crate.findUnique({
+      const userWithBookmarks = await prisma.user.findUnique({
         where: { id: String(id) },
-        include: { creator: true },
+        include: {
+          bookmarkedCrates: {
+            include: {
+              tokens: true,
+            },
+          },
+        },
       });
-      if (!crate)
-        return res.status(HTTP_NOT_FOUND).json({ error: "Crate not found" });
-      const tokens = await prisma.token.findMany({
-        where: { crateId: crate.id },
-      });
-      if (!tokens)
-        return res.status(HTTP_NOT_FOUND).json({ error: "Tokens not found" });
-      res.status(HTTP_OK).json({ ...crate, tokens });
+      res.status(HTTP_OK).json(userWithBookmarks);
     } catch (error) {
       res
         .status(HTTP_SERVER_ERROR)
