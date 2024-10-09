@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 const cors = Cors({
   methods: ['POST', 'OPTIONS', 'HEAD'],
-  origin: ['http://localhost:5173', 'https://sickfreak.club , "https://localhost:3000'],
+  origin: ['http://localhost:5173', 'https://sickfreak.club , "http://localhost:3000'],
 });
 
 // Helper function to run middleware

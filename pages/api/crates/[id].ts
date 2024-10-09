@@ -12,7 +12,7 @@ const HTTP_METHOD_NOT_ALLOWED = 405;
 // Initialize the cors middleware
 const cors = Cors({
   methods: ["POST", "GET", "OPTIONS", "HEAD"],
-  origin: ["http://localhost:5173", "https://sickfreak.club" , "https://localhost:3000"],
+  origin: ["http://localhost:5173", "https://sickfreak.club" , "http://localhost:3000"],
 });
 
 // Helper function to run middleware
